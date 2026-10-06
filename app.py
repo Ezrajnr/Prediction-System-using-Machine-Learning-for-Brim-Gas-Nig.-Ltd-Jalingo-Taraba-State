@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import calendar
 
 # Page Config
 st.set_page_config(page_title="Brim Gas Sales Prediction System", page_icon="⛽", layout="wide")
@@ -42,18 +43,28 @@ if app_mode == "Dashboard Overview":
 
 elif app_mode == "Make Sales Prediction":
     st.title("📊 Future Sales & Revenue Forecasting")
-    st.write("Using the current market pricing of **₦4,500 per kg**, adjust the operational parameters below to estimate future demand and revenue generation.")
+    st.write("Using the current market pricing of **₦1,500 per kg**, adjust the operational parameters below to estimate future demand and revenue generation.")
     
+    # Month name mapping for words
+    month_names = list(calendar.month_name)[1:] # ['January', 'February', ..., 'December']
+    month_dict = {name: idx for idx, name in enumerate(month_names, 1)}
+
     col1, col2 = st.columns(2)
     with col1:
-        unit_price = st.number_input("Unit Price of LPG (NGN/kg)", min_value=3000.0, max_value=8000.0, value=4500.0, step=100.0)
+        # Allows user to type or adjust to ANY custom unit price amount
+        unit_price = st.number_input("Unit Price of LPG (NGN/kg)", min_value=0.0, max_value=50000.0, value=1500.0, step=50.0)
         is_rainy = st.selectbox("Season Type", options=[(1, "Rainy Season (High Demand)"), (0, "Dry Season")], format_func=lambda x: x[1])[0]
     with col2:
         promo = st.selectbox("Promotional Activity Active?", options=[(1, "Yes"), (0, "No")], format_func=lambda x: x[1])[0]
-        month = st.slider("Month of Year", min_value=1, max_value=12, value=6)
+        
+        # Month selector in words
+        selected_month_name = st.selectbox("Month of Year", options=month_names, index=5) # Default to June (index 5)
+        month = month_dict[selected_month_name]
+        
         day_of_week = st.selectbox("Day of Week", options=[0,1,2,3,4,5,6], format_func=lambda x: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][x])
 
     if st.button("Predict Sales & Revenue", type="primary"):
+        # Model expects numerical month (1-12)
         input_data = pd.DataFrame([[unit_price, is_rainy, promo, month, day_of_week]], 
                                   columns=['Unit_Price', 'Is_Rainy_Season', 'Promotion_Active', 'Month', 'DayOfWeek'])
         prediction = model.predict(input_data)[0]
