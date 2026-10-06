@@ -51,20 +51,18 @@ elif app_mode == "Make Sales Prediction":
 
     col1, col2 = st.columns(2)
     with col1:
-        # Allows user to type or adjust to ANY custom unit price amount
         unit_price = st.number_input("Unit Price of LPG (NGN/kg)", min_value=0.0, max_value=50000.0, value=1500.0, step=50.0)
         is_rainy = st.selectbox("Season Type", options=[(1, "Rainy Season (High Demand)"), (0, "Dry Season")], format_func=lambda x: x[1])[0]
     with col2:
         promo = st.selectbox("Promotional Activity Active?", options=[(1, "Yes"), (0, "No")], format_func=lambda x: x[1])[0]
         
         # Month selector in words
-        selected_month_name = st.selectbox("Month of Year", options=month_names, index=5) # Default to June (index 5)
+        selected_month_name = st.selectbox("Month of Year", options=month_names, index=5) # Default to June
         month = month_dict[selected_month_name]
         
         day_of_week = st.selectbox("Day of Week", options=[0,1,2,3,4,5,6], format_func=lambda x: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][x])
 
     if st.button("Predict Sales & Revenue", type="primary"):
-        # Model expects numerical month (1-12)
         input_data = pd.DataFrame([[unit_price, is_rainy, promo, month, day_of_week]], 
                                   columns=['Unit_Price', 'Is_Rainy_Season', 'Promotion_Active', 'Month', 'DayOfWeek'])
         prediction = model.predict(input_data)[0]
